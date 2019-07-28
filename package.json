@@ -1,0 +1,27 @@
+{
+  "name": "@fizz6/strife-serialization",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fizz6/strife.git"
+  },
+  "author": "Jake Chrumka <chrumka.mj@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fizz6/strife-serialization/issues"
+  },
+  "homepage": "https://github.com/fizz6/strife-serialization#readme",
+  "devDependencies": {
+    "tsconfig-paths": "^3.8.0",
+    "typescript": "^3.3.4000"
+  },
+  "dependencies": {
+    "uuid": "^3.3.2"
+  }
+}
