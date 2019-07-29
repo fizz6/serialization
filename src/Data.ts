@@ -1,4 +1,4 @@
-type Optional<T> = T | undefined;
+import { Optional } from './Optional';
 
 export default class Data {
     

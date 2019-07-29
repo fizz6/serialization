@@ -1,9 +1,11 @@
-import Data from './Data';
 import Context from './Context';
+import Data from './Data';
+import { Optional } from './Optional';
 
-type Optional<T> = T | undefined;
-
-type Constructor = new (...args: any[]) => Object;
+interface Constructor {
+    new (...args: any[]): Object;
+    namespace?: string;
+}
 
 export default class Serialization {
     
@@ -30,23 +32,31 @@ export default class Serialization {
         return Serialization.PrototypesHelper(prototypeConstructor, out);
     }
     
+    private static Namespace(constructor: Constructor): string {
+        return constructor.namespace === undefined
+            ? constructor.name
+            : `${constructor.namespace}.${constructor.name}`;
+    }
+    
     public static Register(constructor: Constructor): void {
-        if (Serialization.m_constructors.has(constructor.name)) {
-            throw new Error(`'${constructor.name}' is already serializable`);
-            return;
+        const constructorName = Serialization.Namespace(constructor);
+        
+        if (Serialization.m_constructors.has(constructorName)) {
+            throw new Error(`'${constructorName}' is already serializable`);
         }
         
         const prototypes = Serialization.Prototypes(constructor);
         
-        Serialization.m_constructors.set(constructor.name, constructor);
+        Serialization.m_constructors.set(constructorName, constructor);
         Serialization.m_propertyNames.set(constructor, new Set());
         Serialization.m_prototypes.set(constructor, prototypes);
     }
     
     public static Class(constructor: Constructor): void {
-        if (Serialization.m_constructors.has(constructor.name)) {
-            throw new Error(`'${constructor.name}' is already serializable`);
-            return;
+        const constructorName = Serialization.Namespace(constructor);
+        
+        if (Serialization.m_constructors.has(constructorName)) {
+            throw new Error(`'${constructorName}' is already serializable`);
         }
         
         let instance: Object;
@@ -54,7 +64,7 @@ export default class Serialization {
             instance = new constructor();
         }
         catch {
-            throw new Error(`'${constructor.name}' must have a default constructor in order to be serializable`);
+            throw new Error(`'${constructorName}' must have a default constructor in order to be serializable`);
         }
         
         const prototypes = Serialization.Prototypes(constructor);
@@ -84,19 +94,20 @@ export default class Serialization {
                 new Set(Object.getOwnPropertyNames(instance))
             );
         
-        Serialization.m_constructors.set(constructor.name, constructor);
+        Serialization.m_constructors.set(constructorName, constructor);
         Serialization.m_propertyNames.set(constructor, propertyNames);
         Serialization.m_prototypes.set(constructor, prototypes);
     }
     
     public static Property(target: Object, propertyName: string): void {
         const constructor = target.constructor as Constructor;
+        const constructorName = Serialization.Namespace(constructor);
         
         let propertyNames = Serialization.m_propertyNames.get(constructor);
         if (propertyNames === undefined) {
             propertyNames = new Set();
             const prototypes = Serialization.Prototypes(constructor);
-            Serialization.m_constructors.set(constructor.name, constructor);
+            Serialization.m_constructors.set(constructorName, constructor);
             Serialization.m_propertyNames.set(constructor, propertyNames);
             Serialization.m_prototypes.set(constructor, prototypes);
         }
@@ -106,27 +117,29 @@ export default class Serialization {
     
     public static Serialize(target: any): Data {
         const constructor = target.constructor as Constructor;
+        const constructorName = Serialization.Namespace(constructor);
         
         if (!(target instanceof Object)) {
-            return new Data(constructor.name, target);
+            return new Data(constructorName, target);
         }
         
         if (target instanceof Array) {
             const value = (target as Array<any>)
                 .map((item: any): Data  => Serialization.Serialize(item));
-            return new Data(constructor.name, value);
+            return new Data(constructorName, value);
         }
         
         const prototypes = Serialization.m_prototypes.get(constructor);
         if (prototypes === undefined) {
-            return new Data(constructor.name, undefined);
+            return new Data(constructorName, undefined);
         }
         
         let value = Array.from(prototypes)
             .reverse()
             .reduce(
                 (state: { [propertyName: string]: Data }, prototype: Constructor): { [propertyName: string]: Data } => {
-                    if (Serialization.m_constructors.has(prototype.name)) {
+                    const prototypeName = Serialization.Namespace(prototype);
+                    if (Serialization.m_constructors.has(prototypeName)) {
                         const propertyNames = Serialization.m_propertyNames.get(prototype);
                         if (propertyNames === undefined) {
                             return state;
@@ -146,7 +159,7 @@ export default class Serialization {
                 {}
             );
         
-        const data = new Data(constructor.name, value);
+        const data = new Data(constructorName, value);
         
         if (target.serialize !== undefined) {
             target.serialize(data);
@@ -177,12 +190,12 @@ export default class Serialization {
             instance = new constructor();
         }
         catch {
-            throw new Error(`'${constructor.name}' must have a default constructor in order to be serializable`);
+            throw new Error(`'${constructorName}' must have a default constructor in order to be serializable`);
         }
         
         const prototypes = Serialization.m_prototypes.get(constructor);
         if (prototypes === undefined) {
-            throw new Error(`'${constructor.name}' cannot be deserialized`);
+            throw new Error(`'${constructorName}' cannot be deserialized`);
         }
         
         Array.from(prototypes)
