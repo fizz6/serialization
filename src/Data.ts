@@ -1,7 +1,5 @@
 type Optional<T> = T | undefined;
 
-type Context = { [index: string]: any };
-
 export default class Data {
     
     private m_constructorName: string;
@@ -14,9 +12,9 @@ export default class Data {
         return this.m_value;
     }
     
-    public constructor(constructorName: string, data: any) {
+    public constructor(constructorName: string, value: any) {
         this.m_constructorName = constructorName;
-        this.m_value = data;
+        this.m_value = value;
     }
     
 }

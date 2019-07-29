@@ -30,8 +30,22 @@ export default class Serialization {
         return Serialization.PrototypesHelper(prototypeConstructor, out);
     }
     
+    public static Register(constructor: Constructor): void {
+        if (Serialization.m_constructors.has(constructor.name)) {
+            throw new Error(`'${constructor.name}' is already serializable`);
+            return;
+        }
+        
+        const prototypes = Serialization.Prototypes(constructor);
+        
+        Serialization.m_constructors.set(constructor.name, constructor);
+        Serialization.m_propertyNames.set(constructor, new Set());
+        Serialization.m_prototypes.set(constructor, prototypes);
+    }
+    
     public static Class(constructor: Constructor): void {
         if (Serialization.m_constructors.has(constructor.name)) {
+            throw new Error(`'${constructor.name}' is already serializable`);
             return;
         }
         
@@ -108,11 +122,10 @@ export default class Serialization {
             return new Data(constructor.name, undefined);
         }
         
-        const value = Array.from(prototypes)
+        let value = Array.from(prototypes)
             .reverse()
             .reduce(
                 (state: { [propertyName: string]: Data }, prototype: Constructor): { [propertyName: string]: Data } => {
-                    
                     if (Serialization.m_constructors.has(prototype.name)) {
                         const propertyNames = Serialization.m_propertyNames.get(prototype);
                         if (propertyNames === undefined) {
@@ -151,7 +164,7 @@ export default class Serialization {
         
         if (constructorName === "Array") {
             return (data.value as Array<any>)
-                .map((item: any): Object => Serialization.Deserialize(item));
+                .map((data: Data): Object => Serialization.Deserialize(data));
         }
         
         const constructor = Serialization.m_constructors.get(constructorName);
@@ -176,7 +189,6 @@ export default class Serialization {
             .reverse()
             .forEach(
                 (prototype: Constructor): void => {
-                    
                     if (Serialization.m_constructors.has(prototype.name)) {
                         const propertyNames = Serialization.m_propertyNames.get(prototype);
                         if (propertyNames === undefined) {
@@ -190,7 +202,6 @@ export default class Serialization {
                                 }
                             );
                     }
-                    
                 }
             );
         
