@@ -1,3 +1,7 @@
+type Optional<T> = T | undefined;
+
+type Context = { [index: string]: any };
+
 export default class Data {
     
     private m_constructorName: string;
@@ -10,20 +14,9 @@ export default class Data {
         return this.m_value;
     }
     
-    private m_context: { [index: string]: any };
-    public get context(): { [index: string]: any } {
-        return this.m_context;
-    }
-    
-    public constructor(constructorName: string, data: any, context?: any) {
+    public constructor(constructorName: string, data: any) {
         this.m_constructorName = constructorName;
         this.m_value = data;
-        this.m_context = context;
-    }
-    
-    public get(index: string): Data {
-        const data = this.m_value[index] as Data;
-        return new Data(data.m_constructorName, data.m_value, this.m_context || {});
     }
     
 }
