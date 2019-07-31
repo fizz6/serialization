@@ -7,7 +7,7 @@ interface Constructor {
     namespace?: string;
 }
 
-export default class Serialization {
+class Serialization {
     
     private static m_constructors: Map<string, Constructor> = new Map();
     
@@ -226,3 +226,17 @@ export default class Serialization {
     }
     
 }
+
+const store = global === undefined
+    ? (window as any)
+    : (global as any);
+    
+if (store.fizz6 === undefined) {
+    store.fizz6 = {};
+}
+
+if (store.fizz6.serialization === undefined) {
+    store.fizz6.serialization = Serialization;
+}
+
+export default store.fizz6.serialization;
