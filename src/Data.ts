@@ -2,9 +2,9 @@ import { Optional } from './Optional';
 
 export default class Data {
     
-    private m_constructorName: string;
-    public get constructorName(): string {
-        return this.m_constructorName;
+    private m_identifier: string;
+    public get identifier(): string {
+        return this.m_identifier;
     }
     
     private m_value: any;
@@ -12,8 +12,8 @@ export default class Data {
         return this.m_value;
     }
     
-    public constructor(constructorName: string, value: any) {
-        this.m_constructorName = constructorName;
+    public constructor(identifier: string, value: any) {
+        this.m_identifier = identifier;
         this.m_value = value;
     }
     
